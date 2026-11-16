@@ -62,4 +62,5 @@ export const ABOUT = `
 <ul>${Object.keys(SRC).map((k) => `<li>${cite(k)}</li>`).join('')}</ul>
 <p>Depth cue definitions were checked against Psychology 2e by Rose M. Spielman, William J. Jenkins and Marilyn D. Lovett, OpenStax, licensed CC BY 4.0. Access for free at <a href="https://openstax.org/books/psychology-2e/pages/1-introduction" target="_blank" rel="noopener">openstax.org/books/psychology-2e</a>. No OpenStax text or figures are reproduced.</p>
 <p>The engineering note in the debrief is general textbook knowledge and is not tied to one source.</p>
+<p>The debrief shows your answers in the order you gave them, with a very rough report of time spent on open decisions and optional work. It is not scored.</p>
 <p>Built with Claude as a workshop demo for faculty. No tracking. No data leaves this page.</p>`;
