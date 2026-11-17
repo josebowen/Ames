@@ -8,24 +8,24 @@ export const SRC = {
   glen: { t: 'Glennerster, Gilson, Tcheang and Parker, Perception of size in a dynamic Ames room', u: 'https://www.dpag.ox.ac.uk/publications/633885' },
   holbein: { t: 'Holbein, The Ambassadors (1533), National Gallery, London', u: 'https://en.wikipedia.org/wiki/The_Ambassadors_(Holbein)' },
   spada: { t: 'Borromini, perspective gallery, Palazzo Spada, Rome', u: 'https://en.wikipedia.org/wiki/Palazzo_Spada' },
-  jove: { t: 'JoVE Science Education, The Ames Room', u: 'https://www.jove.com/v/10292/leaving-groups' },
+  jove: { t: 'JoVE Science Education, The Ames Room', u: 'https://app.jove.com/v/10292' },
 };
 export const cite = (k) => `<a class="cite" href="${SRC[k].u}" target="_blank" rel="noopener">${SRC[k].t}</a>`;
 
-export const CUE_OPTS = ['Linear perspective', 'Texture gradient', 'Relative size', 'Interposition'];
+export const CUE_OPTS = ['Linear perspective', 'Texture gradient', 'Relative size', 'Height in the field'];
 export const CUES = [
   { id: 'floor', ans: 1, view: [0.3, 0.82],
-    q: 'The floor tiles. Each real tile is a different size and shape. From the peephole they shrink evenly toward the back wall.',
+    q: 'The floor. Its real tiles are all different sizes and shapes. Which cue makes it read as flat and level?',
     ok: 'Texture gradient. A repeating pattern that gets finer reads as a surface running away from you. These tiles are cut so the pattern gets finer at the same rate on both sides, so the floor reads as flat and level.',
-    no: ['Close. Linear perspective is about straight edges converging. The cue here is the grain of a repeating pattern.', '', 'Relative size compares two objects you take to be equal. The cue here is the grain of a repeating surface pattern.', 'Interposition is one object blocking part of another. Nothing is blocked here.'] },
+    no: ['Close. Linear perspective is about straight edges converging. The cue here is the grain of a repeating pattern.', '', 'Relative size compares two objects you take to be equal. The cue here is the grain of a repeating surface pattern.', 'Height in the field reads things higher in the view as farther off. The floor is cut so both back corners sit at the same height in your view.'] },
   { id: 'windows', ans: 0, view: [-0.3, 0.42],
-    q: 'The windows and the wall edges. The left window is really much larger than the right one. From the peephole their edges line up as if the wall faced you squarely.',
+    q: 'The back wall and its windows. The left window is really much larger. Which cue makes the wall read as square to you?',
     ok: 'Linear perspective. Edges you take to be parallel converge with distance, and the eye reads depth from how they converge. These windows are trapezoids shaped so their edges converge exactly as rectangles on a square wall would.',
-    no: ['', 'Texture gradient is about a repeating surface pattern. The cue here is how straight edges converge.', 'Relative size compares two objects you take to be equal. The cue here is how straight edges converge.', 'Interposition is one object blocking part of another. Nothing is blocked here.'] },
+    no: ['', 'Texture gradient is about a repeating surface pattern. The cue here is how straight edges converge.', 'Relative size compares two objects you take to be equal. The cue here is how straight edges converge.', 'Height in the field reads things higher in the view as farther off. The floor is cut so both back corners sit at the same height in your view.'] },
   { id: 'people', ans: 2, view: [0.85, 0.5],
-    q: 'The two people. Every other cue says they stand at the same distance. What is left to explain why one image is smaller?',
+    q: 'The two people. The room now reads as square and level. Which cue turns the smaller image into a smaller person?',
     ok: 'Relative size. Normally you assume two people are about the same size and read the smaller image as the farther person. The room says both are equally far, so the smaller image gets read as a smaller person.',
-    no: ['Linear perspective made the wall look square. The cue applied to the two people themselves is a different one.', 'Texture gradient made the floor look level. The cue applied to the two people themselves is a different one.', '', 'Interposition is one object blocking part of another. Neither person blocks the other here.'] },
+    no: ['Linear perspective made the wall look square. The cue applied to the two people themselves is a different one.', 'Texture gradient made the floor look level. The cue applied to the two people themselves is a different one.', '', 'Height in the field reads things higher in the view as farther off. The floor is cut so both back corners sit at the same height in your view.'] },
 ];
 export const Q1 = {
   opts: ['About twice as far away', 'About equally far away', 'About half as far away'], vals: [2, 1, 0.5],
@@ -62,4 +62,5 @@ export const ABOUT = `
 <ul>${Object.keys(SRC).map((k) => `<li>${cite(k)}</li>`).join('')}</ul>
 <p>Depth cue definitions were checked against Psychology 2e by Rose M. Spielman, William J. Jenkins and Marilyn D. Lovett, OpenStax, licensed CC BY 4.0. Access for free at <a href="https://openstax.org/books/psychology-2e/pages/1-introduction" target="_blank" rel="noopener">openstax.org/books/psychology-2e</a>. No OpenStax text or figures are reproduced.</p>
 <p>The engineering note in the debrief is general textbook knowledge and is not tied to one source.</p>
+<p>The debrief shows your answers in the order you gave them, with a very rough report of time spent on open decisions and optional work. It is not scored.</p>
 <p>Built with Claude as a workshop demo for faculty. No tracking. No data leaves this page.</p>`;

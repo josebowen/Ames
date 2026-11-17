@@ -8,6 +8,7 @@ import { GlowPoints, skyDome, mulberry, clamp, lerp, ease } from './fx.js';
 import { buildRoom, ROOM as R, warp } from './room.js';
 import { makeFigure } from './people.js';
 import { SRC, cite, CUES, CUE_OPTS, Q1, Q4, FIELDS, ABOUT } from './content.js';
+import { EF } from './effort.js';
 
 const $ = (s) => document.querySelector(s);
 const qs = new URLSearchParams(location.search);
@@ -38,7 +39,17 @@ const st = { step: 'title', c: CHALF, cT: CHALF, s: 0, sT: 1, auto: true, wait: 
   build: { tries: 0, done: false, shown: false, ok: false, msg: '', kind: '' },
   brk: { moved: false, sway: false, lights: true, q: { sel: null, tries: 0, first: null, done: false } }, log: [] };
 const cam = { blend: 0, blendT: 0, yaw: 0.6, pitch: 0.6, yawT: 0.6, pitchT: 0.6, zoom: 1, eye: V(0, 0, 0), spin: false };
-const log = (what, extra = {}) => st.log.push({ step: st.step, what, ...extra });
+const log = (what, extra = {}) => { if (extra.ok === false) EF.wrong(); if (extra.ok === true) EF.resolved(); if (extra.ok !== undefined && what !== 'build') EF.mark({ ok: extra.ok }); return st.log.push({ step: st.step, what, ...extra }); };
+function trail() {
+  const out = [], L = st.log, mk = (l, names) => `"${names[l.sel]}" ${l.ok ? '✓' : '✕'}`;
+  if (st.guess !== null) out.push(`Opening guess: ${['A is taller', 'B is taller', 'they are the same height'][st.guess]}.`);
+  const a = L.filter((l) => l.what === 'q1'); if (a.length) out.push(`Image size and distance. You said: ${a.map((l) => mk(l, Q1.opts)).join(', then ')}.`);
+  CUES.forEach((C, i) => { const c = L.filter((l) => l.what === 'cue' && l.k === i); if (c.length) out.push(`${C.q.split('.')[0]}. You said: ${c.map((l) => CUE_OPTS[l.sel].toLowerCase() + (l.ok ? ' ✓' : ' ✕')).join(', then ')}.`); });
+  const b = L.filter((l) => l.what === 'build'); if (b.length || st.build.shown) out.push(`Building the room. ${b.length} ${b.length === 1 ? 'check' : 'checks'} of your own setting${st.build.shown ? ', then Show me' : ''}.`);
+  const d = L.filter((l) => l.what === 'q4'); if (d.length) out.push(`Why one fixed eye. You said: ${d.map((l) => mk(l, Q4.opts)).join(', then ')}.`);
+  return out;
+}
+EF.watch(() => { const s = st.step; if (s === 'look' && st.guess === null) return 'Opening guess'; if (s === 'look' && st.q1 && !st.q1.done && st.swapped) return 'Image size and distance'; if (s === 'cues' && !st.cue.done) return 'Cue ' + (st.cue.i + 1); if (s === 'build' && !st.build.done) return 'Building the room'; if (s === 'break' && st.brk.q && !st.brk.q.done) return 'Why one fixed eye'; return null; });
 
 // ---------- renderer and scene ----------
 const canvas = $('#gl');
@@ -167,7 +178,7 @@ function render() {
     h += `<fieldset class="q"><legend>${k + 1} of 3. ${C.q}</legend>${seg('cue', CUE_OPTS, st.cue, 'four')}</fieldset>`;
     if (st.cue.done) h += `<p class="fb ${st.cue.first[k] ? 'good' : ''}">${C.ok}</p>` + nextBtn(k < 2 ? 'Next feature' : 'Build your own room');
     else if (st.cue.tries) h += `<p class="fb bad">${C.no[st.cue.sel]}</p>`;
-    if (k === 2 && st.cue.done) h += `<p class="src">Linear perspective, relative size and interposition: ${cite('osx')}. Texture gradient is standard in perception courses and is not in the OpenStax list.</p>`;
+    if (k === 2 && st.cue.done) h += `<p class="src">Linear perspective and relative size: ${cite('osx')}. Texture gradient and height in the field are standard in perception courses.</p>`;
   } else if (s === 'build') {
     const B = st.build;
     h = `<p class="kick">Step 4 of 6</p><h2 tabindex="-1">Build your own</h2><p>The slider bends the room. At zero it is an ordinary box and the two people look equal. Watch the gold frame while you drag. The room in it never changes. Only the people do.</p>
@@ -194,6 +205,8 @@ function render() {
     <li class="${pts[1] && pts[2] && pts[3] ? 'ok' : 'no'}"><span class="mark">${pts[1] && pts[2] && pts[3] ? '✓' : '·'}</span><div>Identify the monocular cues<small>${[0, 1, 2].filter((i) => pts[i + 1]).length} of 3 named on the first try.</small></div></li>
     <li class="${pts[4] ? 'ok' : 'no'}"><span class="mark">${pts[4] ? '✓' : '·'}</span><div>Apply the size and distance rule<small>${st.build.shown ? 'The room was set for you with Show me.' : st.build.ok ? `You set the room in ${st.build.tries} ${st.build.tries === 1 ? 'check' : 'checks'}.` : 'Not completed.'}</small></div></li>
     <li class="${pts[5] ? 'ok' : 'no'}"><span class="mark">${pts[5] ? '✓' : '·'}</span><div>Explain why it needs one fixed eye<small>${st.brk.sway && !st.brk.dragged ? 'The head movement was shown to you.' : 'You moved your own head.'}</small></div></li></ul>
+    <h3>Your answers, in the order you gave them</h3><ul class="try">${trail().map((t) => `<li>${t}</li>`).join('')}</ul>
+    <p class="hint">First answers are kept even when a second try was right.</p>${EF.html()}
     <h3>Same geometry, other fields</h3><div class="cards">${FIELDS.map((f) => `<div class="cardf"><h4>${f.h}</h4><p>${f.p}${f.k ? ` <span class="src">${cite(f.k)}</span>` : ''}</p></div>`).join('')}</div>
     <h3>Take it further</h3><p>A phone camera has one lens. Two same-sized objects appear in one photo, and one image is half the height of the other. What can the photo tell you about where they are, and what can it not?</p>
     <div class="row"><button class="btn" data-act="again">Play again</button><button class="btn" data-act="about">Sources and method</button></div>`;
@@ -231,7 +244,7 @@ function act(a) {
   else if (a === 'check' || a === 'showBuild') {
     const B = st.build;
     if (a === 'showBuild') { B.shown = true; st.cT = CHALF; st.c = st.c; const m = measure(CHALF); B.done = true; B.kind = ''; B.msg = `Set for you. B is ${f1(m.B.dist)} m from the peephole and A is ${f1(m.A.dist)} m. That is ${f1(m.far)} times as far, so B's image is ${f2(m.img)} the height of A's.`; log('build', { shown: true }); }
-    else { B.tries++; const m = measure(st.cT); log('build', { c: st.cT, img: m.img });
+    else { B.tries++; if (B.tries > 1) EF.extra('Extra room checks'); const m = measure(st.cT); log('build', { c: st.cT, img: m.img });
       if (Math.abs(m.img - 0.5) <= 0.035) { B.done = true; B.ok = true; B.kind = 'good'; B.msg = `That does it. B is ${f1(m.B.dist)} m away and A is ${f1(m.A.dist)} m. That is ${f1(m.far)} times as far, and B's image measures ${f2(m.img)} the height of A's.`; }
       else { B.kind = 'bad'; B.msg = B.tries === 1 ? `Not yet. B's image is ${f2(m.img)} the height of A's. Image height goes as one over distance. How many times as far must B be?` : `B's image is ${f2(m.img)} the height of A's. For half the height B must be twice as far as A. Right now B is ${f1(m.far)} times as far. ${m.img > 0.5 ? 'Bend the room more.' : 'Bend the room less.'}`; } }
     render();
@@ -240,7 +253,7 @@ function act(a) {
   else if (a === 'center') { st.brk.sway = false; cam.eye.set(0, 0, 0); render(); }
   else if (a === 'lights') { st.brk.lights = !st.brk.lights; room.group.visible = st.brk.lights; render(); }
   else if (a === 'again') { Object.assign(st, { guess: null, swapped: false, q1: { sel: null, tries: 0, first: null, done: false }, cue: { i: 0, sel: null, tries: 0, done: false, first: [] }, build: { tries: 0, done: false, shown: false, ok: false, msg: '', kind: '' }, brk: { moved: false, sway: false, lights: true, q: { sel: null, tries: 0, first: null, done: false } }, log: [], s: 0 }); go('look'); }
-  else if (a === 'next') {
+  else if (a === 'next') { EF.resolved();
     if (st.step === 'cues') { if (st.cue.i < 2) { st.cue.i++; st.cue.sel = null; st.cue.tries = 0; st.cue.done = false; cueView(); render(); focusH(); } else go('build'); }
     else go(STEPS[STEPS.indexOf(st.step) + 1]);
   }
